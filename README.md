@@ -1,6 +1,7 @@
 PROXY is a kernel netfilter module, colo use it to compare the packets from master and slaver guest.
 
 there are three modules in colo-proxy
+
 nf_conntrack_colo:
 this module creates colo netlink socket through which qemu communicates with proxy,
 and register the nf_ct_colo_extend, this extension is used to store packets and
