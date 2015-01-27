@@ -1,0 +1,202 @@
+From 8efcddaf13a2ac4b72ca8989a19a7e76adb18c86 Mon Sep 17 00:00:00 2001
+From: Gao feng <gaofeng@cn.fujitsu.com>
+Date: Thu, 17 Jul 2014 15:21:09 +0800
+Subject: [PATCH] add COLO library for iptables
+
+Signed-off-by: Gao feng <gaofeng@cn.fujitsu.com>
+---
+ extensions/libxt_PMYCOLO.c        | 76 +++++++++++++++++++++++++++++++++++++++
+ extensions/libxt_SECCOLO.c        | 71 ++++++++++++++++++++++++++++++++++++
+ include/linux/netfilter/xt_COLO.h | 19 ++++++++++
+ 3 files changed, 166 insertions(+)
+ create mode 100644 extensions/libxt_PMYCOLO.c
+ create mode 100644 extensions/libxt_SECCOLO.c
+ create mode 100644 include/linux/netfilter/xt_COLO.h
+
+diff --git a/extensions/libxt_PMYCOLO.c b/extensions/libxt_PMYCOLO.c
+new file mode 100644
+index 0000000..3ea1570
+--- /dev/null
++++ b/extensions/libxt_PMYCOLO.c
+@@ -0,0 +1,76 @@
++/* Shared library add-on to iptables to add TRACE target support. */
++#include <stdio.h>
++#include <string.h>
++#include <stdlib.h>
++#include <getopt.h>
++
++#include <xtables.h>
++#include <linux/netfilter/x_tables.h>
++#include <linux/netfilter/xt_COLO.h>
++
++
++#define s struct xt_colo_primary_info
++static const struct xt_option_entry colo_opts[] = {
++	{.name = "index", .id = 0, .type = XTTYPE_UINT32,
++	 .flags = XTOPT_PUT, XTOPT_POINTER(s, index),
++	 .excl = 1},
++	XTOPT_TABLEEND,
++};
++#undef s
++
++
++static void colo_parse(struct xt_option_call *cb)
++{
++	struct xt_colo_primary_info *einfo = cb->data;
++
++	xtables_option_parse(cb);
++	einfo->index = cb->val.u32;
++}
++
++
++static void colo_print(const void *ip, const struct xt_entry_target *target,
++                      int numeric)
++{
++	const struct xt_colo_primary_info *einfo =
++		(const struct xt_colo_primary_info *)target->data;
++
++	printf("PMYCOLO");
++
++	printf("index %d", einfo->index);
++}
++
++static void colo_save(const void *ip, const struct xt_entry_target *target)
++{
++	const struct xt_colo_primary_info *einfo =
++		(const struct xt_colo_primary_info *)target->data;
++
++	printf("--index %d", einfo->index);
++}
++/*
++static void colo_primary_init(struct xt_entry_target *target)
++{
++	struct xt_colo_primary_info *info = (void *)target->data;
++
++	info->index = 33;
++}
++*/
++static struct xtables_target colo_target = {
++	.family		= NFPROTO_UNSPEC,
++	.name		= "PMYCOLO",
++	.version	= XTABLES_VERSION,
++	.size		= XT_ALIGN(sizeof(struct xt_colo_primary_info)),
++	//.size		= 0,
++	.userspacesize	= offsetof(struct xt_colo_primary_info, colo),
++	//.userspacesize	= XT_ALIGN(sizeof(struct xt_COLO_info)),
++	.save		= colo_save,
++	.print		= colo_print,
++	.x6_parse	= colo_parse,
++	.x6_options	= colo_opts,
++	//.init		= colo_primary_init,
++};
++
++
++void _init(void)
++{
++	xtables_register_target(&colo_target);
++}
+diff --git a/extensions/libxt_SECCOLO.c b/extensions/libxt_SECCOLO.c
+new file mode 100644
+index 0000000..de01323
+--- /dev/null
++++ b/extensions/libxt_SECCOLO.c
+@@ -0,0 +1,71 @@
++/* Shared library add-on to iptables to add TRACE target support. */
++#include <stdio.h>
++#include <string.h>
++#include <stdlib.h>
++#include <getopt.h>
++
++#include <xtables.h>
++#include <linux/netfilter/x_tables.h>
++#include <linux/netfilter/xt_COLO.h>
++
++#define s struct xt_colo_secondary_info
++static const struct xt_option_entry colo_opts[] = {
++	{.name = "index", .id = 0, .type = XTTYPE_UINT32,
++	 .flags = XTOPT_PUT, XTOPT_POINTER(s, index),
++	 .excl = 1},
++	XTOPT_TABLEEND,
++};
++#undef s
++
++static void colo_parse(struct xt_option_call *cb)
++{
++	struct xt_colo_secondary_info *einfo = cb->data;
++
++	xtables_option_parse(cb);
++	einfo->index = cb->val.u32;
++}
++
++static void colo_print(const void *ip, const struct xt_entry_target *target,
++                      int numeric)
++{
++	const struct xt_colo_secondary_info *einfo =
++		(const struct xt_colo_secondary_info *)target->data;
++
++	printf("SECCOLO");
++
++	printf("index %d", einfo->index);
++}
++
++static void colo_save(const void *ip, const struct xt_entry_target *target)
++{
++	const struct xt_colo_secondary_info *einfo =
++		(const struct xt_colo_secondary_info *)target->data;
++
++	printf("--index %d", einfo->index);
++}
++/*
++static void colo_primary_init(struct xt_entry_target *target)
++{
++	struct xt_colo_primary_info *info = (void *)target->data;
++
++	info->index = 33;
++}
++*/
++static struct xtables_target colo_target = {
++	.family		= NFPROTO_UNSPEC,
++	.name		= "SECCOLO",
++	.version	= XTABLES_VERSION,
++	.size		= XT_ALIGN(sizeof(struct xt_colo_secondary_info)),
++	.userspacesize	= offsetof(struct xt_colo_secondary_info, colo),
++	.save		= colo_save,
++	.print		= colo_print,
++	.x6_parse	= colo_parse,
++	.x6_options	= colo_opts,
++	//.init		= colo_primary_init,
++};
++
++
++void _init(void)
++{
++	xtables_register_target(&colo_target);
++}
+diff --git a/include/linux/netfilter/xt_COLO.h b/include/linux/netfilter/xt_COLO.h
+new file mode 100644
+index 0000000..45431ef
+--- /dev/null
++++ b/include/linux/netfilter/xt_COLO.h
+@@ -0,0 +1,19 @@
++#ifndef _XT_COLO_TARGET_H
++#define _XT_COLO_TARGET_H
++
++#include <linux/types.h>
++
++struct xt_colo_primary_info {
++	__u32			index;
++
++	/* for kernel module internal use only */
++	struct colo_primary *colo __attribute__((aligned(8)));
++};
++
++struct xt_colo_secondary_info {
++	__u32			index;
++
++	/* for kernel module internal use only */
++	struct colo_secondary *colo __attribute__((aligned(8)));
++};
++#endif
+-- 
+2.1.0
+
