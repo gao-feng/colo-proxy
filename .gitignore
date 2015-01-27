@@ -1,0 +1,11 @@
+*.cmd
+*.o
+*.o.*
+*.mod.c
+*.ko
+*.order
+*.out
+/Module.symvers
+.tmp_versions
+*.unsigned
+*.swp
