@@ -176,50 +176,8 @@ static unsigned int optlen(const u_int8_t *opt, unsigned int offset)
 		return opt[offset + 1];
 }
 
-static inline u32 colo_get_tcpopt(struct tcphdr *th,
-				  u16 *scale)
-{
-	int i, j;
-	u32 optl = 0;
-	u8 *opt = (u8 *) th;
-	u32 sack_seq = 0;
-
-	for (i = sizeof(*th); i < th->doff * 4; i += optl) {
-		optl = optlen(opt, i);
-
-		if (i + optl > th->doff * 4)
-			break;
-
-		if (th->syn && scale && opt[i] == TCPOPT_WINDOW && optl == TCPOLEN_WINDOW) {
-			*scale = *((u16 *)(opt + i + 2));
-			pr_dbg("slaver get window sacle %u\n", *scale);
-			continue;
-		}
-
-		if (opt[i] != TCPOPT_SACK || optl < (2 + TCPOLEN_SACK_PERBLOCK))
-			continue;
-
-		for (j = 2; j < optl; j++) {
-			if (j == 2) {
-				sack_seq = ntohl(*((u32 *)(opt + i + j)));
-				pr_dbg("set sack value %u\n", sack_seq);
-			} else if ((j - 2) % 4 == 0) {
-				u32 tmp = ntohl(*((u32 *)(opt + i + j)));
-
-				pr_dbg("get sack value %u\n", tmp);
-				if (before(tmp, sack_seq)) {
-					sack_seq = tmp;
-					pr_dbg("set sack to min value %u\n", sack_seq);
-				}
-			}
-		}
-	}
-
-	return sack_seq;
-}
-
 static inline void
-colo_set_tcpopt(struct sk_buff *skb, struct tcphdr *th, u16 *scale)
+colo_operate_tcpopt(struct sk_buff *skb, struct tcphdr *th, u16 *scale)
 {
 	int i, j;
 	u32 optl = 0;
@@ -233,7 +191,8 @@ colo_set_tcpopt(struct sk_buff *skb, struct tcphdr *th, u16 *scale)
 		if (i + optl > th->doff * 4)
 			break;
 
-		if (th->syn && scale && opt[i] == TCPOPT_WINDOW && optl == TCPOLEN_WINDOW) {
+		if (unlikely(th->syn && scale && opt[i] == TCPOPT_WINDOW &&
+			     optl == TCPOLEN_WINDOW)) {
 			*scale = *((u16 *)(opt + i + 2));
 			pr_dbg("master get window sacle %u\n", *scale);
 			continue;
@@ -259,8 +218,7 @@ colo_set_tcpopt(struct sk_buff *skb, struct tcphdr *th, u16 *scale)
 
 static inline
 struct tcphdr *colo_get_tcphdr(u_int8_t pf, struct sk_buff *skb,
-			       struct colo_tcp_cb *cb, u16 *scale,
-				u32 *sack)
+			       struct colo_tcp_cb *cb, u16 *scale)
 {
 	struct tcphdr _tcph, *th;
 	u_int8_t protonum;
@@ -288,30 +246,17 @@ struct tcphdr *colo_get_tcphdr(u_int8_t pf, struct sk_buff *skb,
 	if (!cb)
 		goto out;
 
+	/* Primary skbuff */
 	if ((th->doff * 4) == sizeof(*th))
 		goto set_cb;
 
-	if (sack == NULL) {
-		/* strip sack options & get scale value */
-		if (!skb_make_writable(skb, dataoff + th->doff * 4))
-			return NULL;
+	/* strip sack options & get scale value */
+	if (!skb_make_writable(skb, dataoff + th->doff * 4))
+		return NULL;
 
-		th = (struct tcphdr *)(skb->data + dataoff);
-
-		colo_set_tcpopt(skb, th, scale);
-	} else {
-		unsigned char buff[(15 * 4)];
-		u32 sack_seq;
-
-		th = skb_header_pointer(skb, dataoff, th->doff * 4, buff);
-		if (th == NULL)
-			return NULL;
-
-		sack_seq = colo_get_tcpopt(th, scale);
-		if (sack_seq && (!(*sack) || after(sack_seq, *sack))) {
-			*sack = sack_seq;
-		}
-	}
+	/* BUG_ON(!scale) */
+	th = (struct tcphdr *)(skb->data + dataoff);
+	colo_operate_tcpopt(skb, th, scale);
 
 set_cb:
 	cb->thoff = dataoff;

@@ -716,7 +716,7 @@ static int colo_enqueue_tcp_packet(struct nf_conn_colo *conn,
 	cb = COLO_SKB_CB(skb);
 
 	th = colo_get_tcphdr(nf_ct_l3num((struct nf_conn*) conn->nfct),
-			     skb, cb, &proto->p.mscale, NULL);
+			     skb, cb, &proto->p.mscale);
 
 	if (th == NULL)
 		return -1;
@@ -937,7 +937,7 @@ colo_slaver_enqueue_tcp_packet(struct nf_conn_colo *conn,
 	cb = COLO_SKB_CB(skb);
 
 	th = colo_get_tcphdr(nf_ct_l3num((struct nf_conn *) conn->nfct),
-			     skb, cb, &proto->p.sscale, &proto->p.ssack);
+			     skb, cb, &proto->p.sscale);
 
 	if (th == NULL) {
 		pr_dbg("fuck! get tcphdr of slaver packet failed\n");
