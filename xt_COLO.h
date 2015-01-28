@@ -1,7 +1,10 @@
 /*
- * Put skb into compare list
+ * Copyright (c) 2014, 2015 Fujitsu Limited.
+ * Copyright (c) 2014, 2015 Huawei, Inc.
+ * Copyright (c) 2014, 2015 Intel, Inc.
  *
- * (C) 2014 Gao feng <gaofeng@cn.fujitsu.com>
+ * Authors:
+ *  Gao feng <gaofeng@cn.fujitsu.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
