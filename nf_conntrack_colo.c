@@ -124,7 +124,6 @@ static void nfct_init_colo(struct nf_conn_colo *conn,
 			proto->p.srcv_nxt = rcv_nxt;
 			proto->p.mack = proto->p.sack = max_ack;
 			proto->p.sort = false;
-			proto->p.ssack = 0;
 			proto->p.mscale = proto->p.sscale = 1;
 			pr_dbg("nfct_init_colo compared_seq %u, mrnxt %u, srnxt %u, mack %u, sack %u\n",
 				proto->p.compared_seq, proto->p.mrcv_nxt,

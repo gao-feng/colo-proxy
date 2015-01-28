@@ -25,8 +25,6 @@ union nf_conn_colo_tcp {
 		/* FIXME: get ride of mack, mwin */
 		u32			mack;
 		u32			sack;
-		/* slaver sack value */
-		u32			ssack;
 		u32			mwin;
 		u32			swin;
 		u16			mscale;

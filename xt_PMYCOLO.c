@@ -948,17 +948,14 @@ colo_slaver_enqueue_tcp_packet(struct nf_conn_colo *conn,
 		return NF_DROP;
 	}
 
-	pr_dbg("DEBUG: slaver: enqueue skb seq %u, seq_end %u, ack %u, sack %u, s[sack] %u LEN: %u\n",
-		cb->seq, cb->seq_end, cb->ack, proto->p.sack, proto->p.ssack, cb->seq_end - cb->seq);
+	pr_dbg("DEBUG: slaver: enqueue skb seq %u, seq_end %u, ack %u, sack %u, LEN: %u\n",
+		cb->seq, cb->seq_end, cb->ack, proto->p.sack, cb->seq_end - cb->seq);
 
 	if (before(proto->p.sack, cb->ack)) {
 		proto->p.sack = cb->ack;
 		stolen = true;
 	}
 
-	if (proto->p.ssack && before(proto->p.ssack, proto->p.sack)) {
-		proto->p.ssack = 0;
-	}
 	pr_dbg("slaver max ack %u, rcv_nxt is %u\n", proto->p.sack, proto->p.srcv_nxt);
 
 	if (th->syn) {
@@ -1266,7 +1263,6 @@ static void colo_tcp_do_checkpoint(struct nf_conn_colo *conn)
 	__skb_queue_purge(&conn->slaver_pkt_queue);
 	proto->p.srcv_nxt = proto->p.mrcv_nxt;
 	proto->p.sack = proto->p.mack;
-	proto->p.ssack = 0;
 	proto->p.sscale = proto->p.mscale;
 
 	spin_unlock_bh(&conn->slaver_pkt_queue.lock);
