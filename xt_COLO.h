@@ -14,9 +14,6 @@
 #ifndef _XT_COLO_H
 #define _XT_COLO_H
 
-#include "linux/if_bridge.h"
-#include <net/addrconf.h>
-#include <linux/fsnotify_backend.h>
 #include <net/netfilter/nf_conntrack_seqadj.h>
 
 #ifdef DEBUG

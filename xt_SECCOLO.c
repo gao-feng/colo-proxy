@@ -14,20 +14,8 @@
 */
 
 #include <linux/module.h>
-#include <linux/skbuff.h>
-#include <linux/tcp.h>
-#include <linux/udp.h>
-#include <linux/netfilter.h>
-#include <linux/netfilter/x_tables.h>
-#include <linux/netfilter/nfnetlink.h>
 #include <linux/netfilter/xt_COLO.h>
-#include <net/netfilter/nf_conntrack.h>
-#include <net/netfilter/nf_conntrack_helper.h>
 #include <net/netfilter/nf_conntrack_core.h>
-#include <net/netfilter/nf_conntrack_zones.h>
-#include <net/netfilter/nf_queue.h>
-#include <net/ipv6.h>
-#include <net/ip.h>
 #include <net/tcp.h>
 #include "xt_COLO.h"
 #include "nf_conntrack_colo.h"
