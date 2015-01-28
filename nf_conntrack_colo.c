@@ -119,7 +119,6 @@ static void nfct_init_colo(struct nf_conn_colo *conn,
 			u32 rcv_nxt = 0;
 			u32 max_ack = 0;
 
-
 			proto->p.compared_seq = proto->p.mrcv_nxt =
 			proto->p.srcv_nxt = rcv_nxt;
 			proto->p.mack = proto->p.sack = max_ack;
@@ -129,8 +128,7 @@ static void nfct_init_colo(struct nf_conn_colo *conn,
 				proto->p.compared_seq, proto->p.mrcv_nxt,
 				proto->p.srcv_nxt, proto->p.mack, proto->p.sack);
 		} else {
-			proto->s.sec_tsoffset = proto->s.sec_isn =
-			proto->s.pri_isn = 0;
+			proto->s.sec_isn = proto->s.pri_isn = 0;
 		}
 	}
 

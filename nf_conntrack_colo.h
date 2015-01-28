@@ -35,7 +35,6 @@ union nf_conn_colo_tcp {
 	} p;
 
 	struct {
-		u32			sec_tsoffset;
 		u32			sec_isn;
 		u32			pri_isn;
 	} s;

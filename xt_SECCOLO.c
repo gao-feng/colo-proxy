@@ -149,7 +149,6 @@ static void colo_tcp_chk_finish(struct nf_conn_colo *conn)
 	union nf_conn_colo_tcp *proto = (union nf_conn_colo_tcp *)conn->proto;
 
 	pr_dbg("call colo_tcp_chk_finish to cleanup conn %p\n", ct);
-	proto->s.sec_tsoffset = 0;
 	clear_bit(IPS_SEQ_ADJUST_BIT, &ct->status);
 }
 
