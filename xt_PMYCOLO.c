@@ -587,7 +587,6 @@ compare:
 
 		/* master packet is longer than skaver packet, compare the
 		 * same part, and move the seq & dataoff */
-		cb1->seq_end += cb1->fin;
 		cb->dataoff += len;
 		*compared_seq = cb->seq = cb1->seq_end;
 
