@@ -2,8 +2,8 @@
  * netfilter conntrack colo extendition.
  *
  * Copyright (c) 2014, 2015 Fujitsu Limited.
- * Copyright (c) 2014, 2015 Huawei, Inc.
- * Copyright (c) 2014, 2015 Intel, Inc.
+ * Copyright (c) 2014, 2015 HUAWEI TECHNOLOGIES CO.,LTD.
+ * Copyright (c) 2014, 2015 Intel Corporation.
  *
  * Authors:
  *  Gao feng <gaofeng@cn.fujitsu.com>
