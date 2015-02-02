@@ -318,7 +318,6 @@ static int colo_receive_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
 {
 	int ret = -EINVAL, index;
 	struct colo_node *node;
-	int (*func)(void *, struct sk_buff *, struct nlmsghdr *);
 
 	index = NETLINK_CB(skb).portid;
 
@@ -332,9 +331,8 @@ static int colo_receive_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
 	if (WARN_ONCE(node == NULL, "cannot find node whose index %d\n", index))
 		return 0;
 
-	func = rcu_dereference(node->func);
-	if (func)
-		ret = func(node, skb, nlh);
+	if (node->func)
+		ret = node->func(node, skb, nlh);
 
 	rcu_read_unlock();
 	return ret;
@@ -358,6 +356,7 @@ static int colonl_close_event(struct notifier_block *nb,
 	if (event != NETLINK_URELEASE || !n->portid)
 		return 0;
 
+	rcu_read_lock();
 	node = colo_node_find(n->portid);
 	BUG_ON(node == NULL);
 
@@ -366,6 +365,7 @@ static int colonl_close_event(struct notifier_block *nb,
 	else
 		colo_node_unregister(node);
 
+	rcu_read_unlock();
 	return 0;
 }
 
