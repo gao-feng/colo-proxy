@@ -134,7 +134,6 @@ static struct nf_hook_ops colo_secondary_ops[] __read_mostly = {
 static void colo_tcp_chk_finish(struct nf_conn_colo *conn)
 {
 	struct nf_conn *ct = (struct nf_conn *)conn->nfct;
-	union nf_conn_colo_tcp *proto = (union nf_conn_colo_tcp *)conn->proto;
 
 	pr_dbg("call colo_tcp_chk_finish to cleanup conn %p\n", ct);
 	clear_bit(IPS_SEQ_ADJUST_BIT, &ct->status);
