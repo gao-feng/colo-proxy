@@ -1435,9 +1435,8 @@ static void colo_primary_destroy_node(struct colo_node *node)
 	struct nf_conn_colo *conn = NULL;
 	struct task_struct *task;
 
-	RCU_INIT_POINTER(node->func, NULL);
-	RCU_INIT_POINTER(node->notify, NULL);
-	synchronize_rcu();
+	node->func = NULL;
+	node->notify = NULL;
 
 	spin_lock_bh(&node->lock);
 	task = node->u.p.task;
@@ -1505,8 +1504,8 @@ static int colo_primary_tg_check(const struct xt_tgchk_param *par)
 
 	__module_get(THIS_MODULE);
 	/* init primary info */
-	RCU_INIT_POINTER(node->func, colo_primary_receive);
-	RCU_INIT_POINTER(node->notify, colo_primary_destroy);
+	node->func = colo_primary_receive;
+	node->notify = colo_primary_destroy;
 
 	init_waitqueue_head(&colo->wait);
 	colo->task = kthread_run(kcolo_thread, colo, "kcolo%u", info->index);

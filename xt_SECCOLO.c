@@ -198,9 +198,8 @@ static void colo_secondary_destroy(void *_node)
 	struct colo_node *node = (struct colo_node *) _node;
 	struct nf_conn_colo *colo_conn, *next;
 
-	RCU_INIT_POINTER(node->func, NULL);
-	RCU_INIT_POINTER(node->notify, NULL);
-	synchronize_rcu();
+	node->func = NULL;
+	node->notify = NULL;
 
 	spin_lock_bh(&node->lock);
 	list_for_each_entry_safe(colo_conn, next, &node->list, conn_list) {
@@ -235,8 +234,8 @@ static int colo_secondary_tg_check(const struct xt_tgchk_param *par)
 
 	__module_get(THIS_MODULE);
 
-	RCU_INIT_POINTER(node->func, colo_secondary_receive);
-	RCU_INIT_POINTER(node->notify, colo_secondary_destroy);
+	node->func = colo_secondary_receive;
+	node->notify = colo_secondary_destroy;
 	colo->failover = false;
 
 out:
