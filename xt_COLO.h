@@ -321,14 +321,6 @@ out:
 }
 
 static inline
-u32 colo_seq_offset(struct nf_conntrack *ct,
-		    enum ip_conntrack_info ctinfo,
-		    u32 seq)
-{
-	return nf_ct_seq_offset((struct nf_conn *)ct, ctinfo, seq);
-}
-
-static inline
 void colo_seqadj_init(struct nf_conn *ct,
 		      enum ip_conntrack_info ctinfo,
 		      s32 off)
