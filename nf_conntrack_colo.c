@@ -354,7 +354,6 @@ static int colonl_close_event(struct notifier_block *nb,
 {
 	struct netlink_notify *n = ptr;
 	struct colo_node *node;
-	void (*close_notify) (void *);
 
 	if (event != NETLINK_URELEASE || !n->portid)
 		return 0;
@@ -362,13 +361,10 @@ static int colonl_close_event(struct notifier_block *nb,
 	node = colo_node_find(n->portid);
 	BUG_ON(node == NULL);
 
-	rcu_read_lock();
-	close_notify = rcu_dereference(node->notify);
-	if (close_notify)
-		close_notify(node);
+	if (node->notify)
+		node->notify(node);
 	else
 		colo_node_unregister(node);
-	rcu_read_unlock();
 
 	return 0;
 }
