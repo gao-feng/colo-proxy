@@ -353,7 +353,8 @@ static int colonl_close_event(struct notifier_block *nb,
 	struct netlink_notify *n = ptr;
 	struct colo_node *node;
 
-	if (event != NETLINK_URELEASE || !n->portid)
+	if (event != NETLINK_URELEASE || !n->portid ||
+	    n->protocol != NETLINK_COLO)
 		return 0;
 
 	rcu_read_lock();
