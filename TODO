@@ -1,3 +1,6 @@
+all:
+1, netns support.
+
 nf_conntrack_colo:
 1, create the colo extension only when conn is unconfirmed.
    right now, we only create colo extension on the direction
