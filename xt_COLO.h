@@ -132,8 +132,6 @@ static inline void colo_get_data(struct sk_buff *skb,
 		if (doff + *size <= start)
 			return;
 
-		BUG_ON(!skb_is_nonlinear(skb));
-
 		*size = start - doff;
 		return;
 	}
