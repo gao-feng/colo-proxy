@@ -1,0 +1,22 @@
+nf_conntrack_colo:
+1, create the colo extension only when conn is unconfirmed.
+   right now, we only create colo extension on the direction
+   which guest sending packet. at this time, the conn may be
+   confirmed already, so we should add target on the --physdev-out
+   too.
+
+2, use the nfnetlink interface, get rid of colo netlink.
+
+3, id order to remove the limitation of netlink portid. use
+   idmap to replace the colo_nodes array.
+
+PMYCOLO:
+1, do not use nfqueue to queue packets of master guest, this will
+   cause netlink nfqueue loss effective. we should reuse the nfqueue_entry
+   and NF_STOLEN.
+
+2, fix the already know kernel bridge bug, this will triger proxy painc if
+   the client is the master host. http://patchwork.ozlabs.org/patch/412388/
+
+3, maybe we can put the enqueue_[tcp|udp|icmp]_packet and compare_[tcp|udp|icmp]
+   to the nf_conntrack_l4proto.
