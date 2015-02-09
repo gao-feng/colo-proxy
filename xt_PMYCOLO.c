@@ -1497,25 +1497,25 @@ static int colo_primary_tg_check(const struct xt_tgchk_param *par)
 
 	colo = &node->u.p;
 
-	if (colo->task) {
+	if (colo->task)
 		/* already initialized by other rules */
 		goto out;
-	}
 
-	__module_get(THIS_MODULE);
-	/* init primary info */
-	node->func = colo_primary_receive;
-	node->notify = colo_primary_destroy;
 
-	init_waitqueue_head(&colo->wait);
 	colo->task = kthread_run(kcolo_thread, colo, "kcolo%u", info->index);
-	colo->checkpoint = false;
-
 	if (IS_ERR(colo->task)) {
 		pr_dbg("colo_tg: fail to create kcolo thread\n");
 		ret = PTR_ERR(colo->task);
 		goto err;
 	}
+
+	init_waitqueue_head(&colo->wait);
+	colo->checkpoint = false;
+
+	__module_get(THIS_MODULE);
+	/* init primary info */
+	node->func = colo_primary_receive;
+	node->notify = colo_primary_destroy;
 out:
 	info->colo = colo;
 	return 0;
