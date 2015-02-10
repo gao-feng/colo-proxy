@@ -816,7 +816,6 @@ static int colo_enqueue_packet(struct nf_queue_entry *entry, unsigned int ptr)
 
 	if (skb_is_gso(skb)) {
 		pr_dbg("master: gso again???!!!\n");
-		return -1;
 	}
 
 	if (entry->hook != NF_INET_PRE_ROUTING) {
