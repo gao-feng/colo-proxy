@@ -1,0 +1,174 @@
+From 29ddc3668b31f1e41c31a7bd449cde2e21d5ebe1 Mon Sep 17 00:00:00 2001
+From: Gao feng <gaofeng@cn.fujitsu.com>
+Date: Mon, 21 Jul 2014 16:34:31 +0800
+Subject: [PATCH] add MARK target support for arptables
+
+Signed-off-by: Gao feng <gaofeng@cn.fujitsu.com>
+---
+ extensions/Makefile                      |   2 +-
+ extensions/arpt_MARK.c                   | 118 +++++++++++++++++++++++++++++++
+ include/linux/netfilter_arp/arp_tables.h |   4 +-
+ 3 files changed, 122 insertions(+), 2 deletions(-)
+ create mode 100644 extensions/arpt_MARK.c
+
+diff --git a/extensions/Makefile b/extensions/Makefile
+index 09b244e..0189cc9 100644
+--- a/extensions/Makefile
++++ b/extensions/Makefile
+@@ -1,6 +1,6 @@
+ #! /usr/bin/make
+ 
+-EXT_FUNC+=standard mangle CLASSIFY
++EXT_FUNC+=standard mangle CLASSIFY MARK
+ EXT_OBJS+=$(foreach T,$(EXT_FUNC), extensions/arpt_$(T).o)
+ 
+ extensions/ebt_%.o: extensions/arpt_%.c include/arptables.h include/arptables_common.h
+diff --git a/extensions/arpt_MARK.c b/extensions/arpt_MARK.c
+new file mode 100644
+index 0000000..af3a18d
+--- /dev/null
++++ b/extensions/arpt_MARK.c
+@@ -0,0 +1,118 @@
++/*
++ * (C) 2014 by Gao Feng <gaofeng@cn.fujitsu.com>
++ *
++ * arpt_MARK.c -- arptables extension to set mark for arp packet
++ *
++ *	This program is free software; you can redistribute it and/or modify
++ *	it under the terms of the GNU General Public License as published by
++ *	the Free Software Foundation; either version 2 of the License, or
++ *	(at your option) any later version.
++ *
++ *	This program is distributed in the hope that it will be useful,
++ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *	GNU General Public License for more details.
++ *
++ *	You should have received a copy of the GNU General Public License
++ *	along with this program; if not, write to the Free Software
++ *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++#include <stdio.h>
++#include <getopt.h>
++#include <arptables.h>
++#include <linux/netfilter/xt_mark.h>
++#include <linux/netfilter/x_tables.h>
++
++static void
++help(void)
++{
++	printf(
++"MARK target v%s options:\n"
++"--set-mark mark : set the mark value\n",
++	ARPTABLES_VERSION);
++}
++
++#define MARK_OPT 1
++
++static struct option opts[] = {
++	{ "set-mark"   , required_argument, 0, MARK_OPT },
++	{0}
++};
++
++static void
++init(struct arpt_entry_target *t)
++{
++	struct xt_mark_tginfo2 *info = (struct xt_mark_tginfo2 *) t->data;
++
++	info->mark = 0;
++	t->u.user.revision = 2;
++}
++
++static int
++parse(int c, char **argv, int invert, unsigned int *flags,
++	const struct arpt_entry *e,
++	struct arpt_entry_target **t)
++{
++	struct xt_mark_tginfo2 *info = (struct xt_mark_tginfo2 *)(*t)->data;
++	int i;
++
++	switch (c) {
++		case MARK_OPT:
++			if (sscanf(argv[optind-1], "%x", &i) != 1) {
++				exit_error(PARAMETER_PROBLEM,
++						"Bad mark value `%s'", optarg);
++				return 0;
++			}
++			info->mark = i;
++			if (*flags)
++				exit_error(PARAMETER_PROBLEM,
++						"CLASSIFY: Can't specify --set-mark twice");
++			*flags = 1;
++			break;
++		default:
++			return 0;
++	}
++	return 1;
++}
++
++static void final_check(unsigned int flags)
++{
++	if (!flags)
++		exit_error(PARAMETER_PROBLEM, "MARK: Parameter --set-mark is required");
++}
++
++static void print(const struct arpt_arp *ip,
++	const struct arpt_entry_target *target, int numeric)
++{
++	struct xt_mark_tginfo2 *info = (struct xt_mark_tginfo2 *)(target->data);
++
++	printf("--set-mark %x ", info->mark);
++}
++
++static void
++save(const struct arpt_arp *ip, const struct arpt_entry_target *target)
++{
++}
++
++static
++struct arptables_target mark
++= { NULL,
++	"MARK",
++	ARPTABLES_VERSION,
++	ARPT_ALIGN(sizeof(struct xt_mark_tginfo2)),
++	ARPT_ALIGN(sizeof(struct xt_mark_tginfo2)),
++	&help,
++	&init,
++	&parse,
++	&final_check,
++	&print,
++	&save,
++	opts
++};
++
++static void _init(void) __attribute__ ((constructor));
++static void _init(void)
++{
++	register_target(&mark);
++}
+diff --git a/include/linux/netfilter_arp/arp_tables.h b/include/linux/netfilter_arp/arp_tables.h
+index 0acda66..ccf8cd0 100644
+--- a/include/linux/netfilter_arp/arp_tables.h
++++ b/include/linux/netfilter_arp/arp_tables.h
+@@ -19,7 +19,7 @@
+ 
+ #include <linux/netfilter_arp.h>
+ 
+-#define ARPT_FUNCTION_MAXNAMELEN 30
++#define ARPT_FUNCTION_MAXNAMELEN 29
+ #define ARPT_TABLE_MAXNAMELEN 32
+ 
+ #define ARPT_DEV_ADDR_LEN_MAX 16
+@@ -69,6 +69,8 @@ struct arpt_entry_target
+ 
+ 			/* Used by userspace */
+ 			char name[ARPT_FUNCTION_MAXNAMELEN];
++
++			u_int8_t revision;
+ 		} user;
+ 		struct {
+ 			u_int16_t target_size;
+-- 
+2.1.0
+
