@@ -355,18 +355,17 @@ static int colonl_close_event(struct notifier_block *nb,
 
 	if (event != NETLINK_URELEASE || !n->portid ||
 	    n->protocol != NETLINK_COLO)
-		return 0;
+		goto out;
 
-	rcu_read_lock();
 	node = colo_node_find(n->portid);
-	BUG_ON(node == NULL);
+	if (node == NULL)
+		goto out;
 
 	if (node->notify)
 		node->notify(node);
 	else
 		colo_node_unregister(node);
-
-	rcu_read_unlock();
+out:
 	return 0;
 }
 
