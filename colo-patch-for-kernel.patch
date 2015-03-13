@@ -41,7 +41,7 @@ index 319f471..6e44fbd 100644
  	IPS_HELPER = (1 << IPS_HELPER_BIT),
 +
 +	/* Conntrack is a colo template */
-+	IPS_COLO_TEMPLATE_BIT = 11,
++	IPS_COLO_TEMPLATE_BIT = 14,
 +	IPS_COLO_TEMPLATE = (1 << IPS_COLO_TEMPLATE_BIT),
  };
  
