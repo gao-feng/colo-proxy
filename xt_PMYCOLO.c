@@ -28,6 +28,7 @@
 #include <linux/icmp.h>
 #include "xt_COLO.h"
 #include "nf_conntrack_colo.h"
+#include <linux/version.h>
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Gao feng <gaofeng@cn.fujitsu.com>");
@@ -877,7 +878,11 @@ static int colo_enqueue_packet(struct nf_queue_entry *entry, unsigned int ptr)
 
 static inline struct nf_conn *nf_ct_slaver_get(void)
 {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 17, 0)
+	return raw_cpu_ptr(&slaver_conntrack);
+#else
 	return &__raw_get_cpu_var(slaver_conntrack);
+#endif
 }
 
 static inline int nf_ct_is_colo_template(const struct nf_conn *ct)
