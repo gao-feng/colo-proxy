@@ -950,16 +950,16 @@ colo_slaver_enqueue_tcp_packet(struct nf_conn_colo *conn,
 
 	pr_dbg("slaver max ack %u, rcv_nxt is %u\n", proto->p.sack, proto->p.srcv_nxt);
 
+	win = cb->win << proto->p.sscale;
 	if (th->syn) {
 		conn->flags |= COLO_CONN_SYN_RECVD;
-		proto->p.swin = cb->win;
+		proto->p.swin = win;
 		pr_dbg("slaver received syn, window scale %u\n", proto->p.sscale);
 		/* need to return NF_STOLEN to start compare thread */
 		kfree_skb(skb);
 		goto out;
 	}
 
-	win = cb->win << proto->p.sscale;
 	if (proto->p.swin < win)
 		stolen = true;
 	proto->p.swin = win;
