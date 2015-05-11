@@ -191,7 +191,7 @@ colo_operate_tcpopt(struct sk_buff *skb, struct tcphdr *th, u16 *scale)
 
 		if (unlikely(th->syn && scale && opt[i] == TCPOPT_WINDOW &&
 			     optl == TCPOLEN_WINDOW)) {
-			*scale = *((u16 *)(opt + i + 2));
+			*scale = *(opt + i + 2);
 			pr_dbg("master get window sacle %u\n", *scale);
 			continue;
 		}
